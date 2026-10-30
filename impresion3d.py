@@ -1,21 +1,24 @@
+import pandas as pd
+import plotly.express as px
+
 def analizar_centro_impresion():
-    print("=" * 60)
-    print("ANALIZADOR DE CONSUMO Y PRODUCCIÓN - CENTRO DE IMPRESIÓN 3D")
-    print("=" * 60)
+    print("=" * 65)
+    print("   ANALIZADOR DE CONSUMO Y PRODUCCIÓN - CENTRO DE IMPRESIÓN 3D   ")
+    print("=" * 65)
     
     # 1. Definición de la Matriz de Consumo (A) y el Vector de Recursos (B)
     A = [
-        [3, 2, 1],
-        [1, 2, 3],
-        [2, 1, 2]
+        [3.0, 2.0, 1.0],
+        [1.0, 2.0, 3.0],
+        [2.0, 1.0, 2.0]
     ]
     
-    B = [100, 80, 75]
+    B = [100.0, 80.0, 75.0]
     
     print("\n--- 3. ANÁLISIS DE COMPATIBILIDAD E INVERTIBILIDAD ---")
     det_A = 8.0  # Valor analítico precalculado
     print(f"Determinante de A: {det_A:.2f}")
-    print("Resultado: [X] Compatible (Matriz invertible)")
+    print("Resultado: [✔] Compatible (Matriz invertible)")
     
     # 2. Matriz Inversa (A^-1) obtenida mediante Gauss-Jordan
     A_inv = [
@@ -32,57 +35,79 @@ def analizar_centro_impresion():
     # Multiplicación de la matriz inversa por el vector B (X = A^-1 * B)
     X = []
     for i in range(3):
-        suma = 0
-        for j in range(3):
-            suma += A_inv[i][j] * B[j]
+        suma = sum(A_inv[i][j] * B[j] for j in range(3))
         X.append(suma)
     
-    print("\nVector de Producción (X):")
-    print(f"  - Piezas Básicas (x1): {X[0]:.0f}")
-    print(f"  - Piezas Técnicas (x2): {X[1]:.0f}")
-    print(f"  - Piezas Avanzadas (x3): {X[2]:.0f}")
+    nombres_piezas = ["Piezas Básicas", "Piezas Técnicas", "Piezas Avanzadas"]
+    
+    print("\nVector de Producción Óptimo (X):")
+    for i in range(3):
+        print(f"  - {nombres_piezas[i]}: {X[i]:.0f} unidades")
     
     # Comprobación de la solución (AX = B)
-    B_comprobacion = []
-    for i in range(3):
-        suma = 0
-        for j in range(3):
-            suma += A[i][j] * X[j]
-        B_comprobacion.append(suma)
-        
-    print(f"\nComprobación (AX = B): {[round(val, 2) for val in B_comprobacion]} (Coincide exactamente con los recursos)")
+    B_comprobacion = [sum(A[i][j] * X[j] for j in range(3)) for i in range(3)]
+    print(f"\nComprobación (AX = B): {[round(val, 2) for val in B_comprobacion]} (100% Exacto)")
 
     # 3. Análisis de Ingresos Económicos
     print("\n--- 6. ANÁLISIS DE INGRESOS ECONÓMICOS ---")
-    precios = [50, 80, 120]  # Básica, Técnica, Avanzada
+    precios = [50.0, 80.0, 120.0]  # Básica, Técnica, Avanzada
     
     # Cálculo de ingresos por tipo de pieza (Precio * Cantidad)
     ingresos_por_tipo = [precios[i] * X[i] for i in range(3)]
     
     print("\nIngresos por categoría:")
-    print(f"  - Ingresos por piezas Básicas: Q{ingresos_por_tipo[0]:.2f}")
-    print(f"  - Ingresos por piezas Técnicas: Q{ingresos_por_tipo[1]:.2f}")
-    print(f"  - Ingresos por piezas Avanzadas: Q{ingresos_por_tipo[2]:.2f}")
+    for i in range(3):
+        print(f"  - {nombres_piezas[i]}: Q{ingresos_por_tipo[i]:,.2f}")
     
     # Ingreso total
     ingreso_total = sum(ingresos_por_tipo)
-    print("=" * 60)
-    print(f"INGRESO TOTAL GENERADO: Q{ingreso_total:.2f}")
-    print("=" * 60)
+    print("=" * 65)
+    print(f"INGRESO TOTAL GENERADO: Q{ingreso_total:,.2f}")
+    print("=" * 65)
 
-    # 4. Exportación nativa a Excel (Formato CSV compatible)
-    archivo_salida = "reporte_centro_impresion.csv"
+    # 4. Generación del Dashboard Interactivo (Guarda un archivo HTML seguro)
+    print("\n[INFO] Generando el dashboard interactivo...")
     try:
-        with open(archivo_salida, mode="w", encoding="utf-8-sig") as f:
-            f.write("Tipo de Pieza,Cantidad Producida,Precio Unitario (Q),Ingreso Generado (Q)\n")
-            nombres_piezas = ["Piezas Básicas", "Piezas Técnicas", "Piezas Avanzadas"]
-            for i in range(3):
-                f.write(f"{nombres_piezas[i]},{round(X[i], 0)},{precios[i]},{ingresos_por_tipo[i]:.2f}\n")
-            f.write(f"TOTAL GENERAL,,, {ingreso_total:.2f}\n")
-            
-        print(f"\n[ÉXITO] Reporte exportado a '{archivo_salida}' (Ábralo directamente con Excel).")
+        data_df = {
+            'tipo_pieza': nombres_piezas,
+            'cantidad_producida': [round(val, 0) for val in X],
+            'precio_unitario': precios,
+            'ingreso_generado': ingresos_por_tipo
+        }
+        df = pd.DataFrame(data_df)
+        
+        # Crear gráfico interactivo de barras con Plotly
+        fig = px.bar(
+            df,
+            x='tipo_pieza',
+            y='cantidad_producida',
+            color='tipo_pieza',
+            text='cantidad_producida',
+            hover_data=['precio_unitario', 'ingreso_generado'],
+            title='Dashboard Interactivo: Producción y Rendimiento - Centro de Impresión 3D',
+            labels={
+                'tipo_pieza': 'Categoría de Pieza', 
+                'cantidad_producida': 'Unidades Producidas'
+            }
+        )
+        
+        fig.update_traces(texttemplate='%{text} unidades', textposition='outside')
+        fig.update_layout(
+            xaxis_title="Tipo de Pieza",
+            yaxis_title="Cantidad Óptima (Unidades)"
+        )
+        
+        # Guardar en HTML para evitar bloqueos del sistema operativo
+        archivo_html = "dashboard_impresion.html"
+        fig.write_html(archivo_html)
+        print(f"[ÉXITO] Dashboard guardado como '{archivo_html}' en tu carpeta.")
+        print("        (Puedes abrirlo con doble clic en cualquier navegador web).")
+        
+        # Intenta lanzarlo automáticamente
+        fig.show()
+        
     except Exception as e:
-        print(f"\n[AVISO] No se pudo guardar el archivo: {e}")
+        print(f"[AVISO] No se pudo desplegar automáticamente el gráfico: {e}")
 
 if __name__ == "__main__":
     analizar_centro_impresion()
