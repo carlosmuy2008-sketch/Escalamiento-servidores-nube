@@ -90,16 +90,17 @@ Tener Python 3 instalado.
 
 1. Descarga o clona este repositorio.
 2. Abre una terminal dentro de la carpeta del proyecto.
-3. Ejecuta:
+3. instala las propiedades de panda para hacer el dashboard en HTML
+4. descarga el documento como un .ZIP
 
 ```bash
-python main.py
+pip install pandas plotly
 ```
 
-En Windows también puedes utilizar:
+ejecutar el proyecto con este comando desde la terminal:
 
 ```bash
-py main.py
+python impresion3d.py
 ```
 
 ## 📊 Resultados obtenidos
