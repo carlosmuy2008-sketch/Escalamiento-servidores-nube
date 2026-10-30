@@ -13,7 +13,7 @@ def analizar_centro_impresion():
     B = [100, 80, 75]
     
     print("\n--- 3. ANÁLISIS DE COMPATIBILIDAD E INVERTIBILIDAD ---")
-    det_A = 8.0  # Calculado analíticamente
+    det_A = 8.0  # Valor analítico precalculado
     print(f"Determinante de A: {det_A:.2f}")
     print("Resultado: [X] Compatible (Matriz invertible)")
     
@@ -69,6 +69,20 @@ def analizar_centro_impresion():
     print("=" * 60)
     print(f"INGRESO TOTAL GENERADO: Q{ingreso_total:.2f}")
     print("=" * 60)
+
+    # 4. Exportación nativa a Excel (Formato CSV compatible)
+    archivo_salida = "reporte_centro_impresion.csv"
+    try:
+        with open(archivo_salida, mode="w", encoding="utf-8-sig") as f:
+            f.write("Tipo de Pieza,Cantidad Producida,Precio Unitario (Q),Ingreso Generado (Q)\n")
+            nombres_piezas = ["Piezas Básicas", "Piezas Técnicas", "Piezas Avanzadas"]
+            for i in range(3):
+                f.write(f"{nombres_piezas[i]},{round(X[i], 0)},{precios[i]},{ingresos_por_tipo[i]:.2f}\n")
+            f.write(f"TOTAL GENERAL,,, {ingreso_total:.2f}\n")
+            
+        print(f"\n[ÉXITO] Reporte exportado a '{archivo_salida}' (Ábralo directamente con Excel).")
+    except Exception as e:
+        print(f"\n[AVISO] No se pudo guardar el archivo: {e}")
 
 if __name__ == "__main__":
     analizar_centro_impresion()
